@@ -51,7 +51,7 @@ services:
     # Controllers
     faber-controller:
         build:
-            context: ../controllers/faber-controller/
+            context: ../../controllers/dotnet/
         ports:
             - 9021:80
         networks:
@@ -63,7 +63,7 @@ services:
             - FABER_AGENT_HOST=${FABER_AGENT_HOST}
     alice-controller:
         build:
-            context: ../controllers/alice-controller/
+            context: ../../controllers/angular/
             args:
                 - RUNMODE=${RUNMODE}
                 - ALICE_AGENT_HOST=${ALICE_AGENT_HOST}
@@ -75,7 +75,7 @@ services:
             - alice-agent
     acme-controller:
         build:
-            context: ../controllers/acme-controller/
+            context: ../../controllers/node/
         ports:
             - 9041:3000
         networks:
