@@ -1,51 +1,61 @@
 version: '3'
 
 services:
-    # Agents
-    faber-agent:
-        command: ['faber --port 8020']
+    # Agent
+    controllers-agent:
         build:
-            context: https://github.com/petridishdev/aries-cloudagent-python.git#openapi-demo
-            dockerfile: ./docker/Dockerfile.demo
+            context: .
+            dockerfile: Dockerfile
         ports:
-            - 8020-8027:8020-8027
+            - ${AGENT_HTTP_PORT}:${AGENT_HTTP_PORT}
+            - ${AGENT_WS_PORT}:${AGENT_WS_PORT}
+            - ${AGENT_ADMIN_PORT}:${AGENT_ADMIN_PORT}
         networks:
-            - aca
+            - aries-cloud-agent
         environment:
             - RUNMODE=${RUNMODE}
             - DOCKERHOST=${DOCKERHOST}
             - LEDGER_URL=${LEDGER_URL}
             - GENESIS_URL=${GENESIS_URL}
-        tty: true
-    alice-agent:
-        command: ['alice --port 8030']
-        build:
-            context: https://github.com/petridishdev/aries-cloudagent-python.git#openapi-demo
-            dockerfile: ./docker/Dockerfile.demo
-        ports:
-            - 8030-8037:8030-8037
-        networks:
-            - aca
-        environment:
-            - RUNMODE=${RUNMODE}
-            - DOCKERHOST=${DOCKERHOST}
-            - LEDGER_URL=${LEDGER_URL}
-            - GENESIS_URL=${GENESIS_URL}
-        tty: true
-    acme-agent:
-        command: ['acme --port 8040']
-        build:
-            context: https://github.com/petridishdev/aries-cloudagent-python.git#openapi-demo
-            dockerfile: ./docker/Dockerfile.demo
-        ports:
-            - 8040-8047:8040-8047
-        networks:
-            - aca
-        environment:
-            - RUNMODE=${RUNMODE}
-            - DOCKERHOST=${DOCKERHOST}
-            - LEDGER_URL=${LEDGER_URL}
-            - GENESIS_URL=${GENESIS_URL}
+            #
+            - ACAPY_LABEL=${AGENT_NAME}
+            - ACAPY_ENDPOINT=${AGENT_ENDPOINT}
+            - ACAPY_GENESIS_URL=${GENESIS_URL}
+            - ACAPY_WALLET_TYPE=indy
+            - ACAPY_WALLET_NAME=${AGENT_WALLET_NAME}
+            - ACAPY_WALLET_KEY=${AGENT_WALLET_ENCRYPTION_KEY}
+            - ACAPY_WALLET_SEED=${AGENT_WALLET_SEED}
+            - ACAPY_WALLET_STORAGE_TYPE=${AGENT_WALLET_STORAGE_TYPE}
+            # - ACAPY_WEBHOOK_URL=${AGENT_WEBHOOK_URL}
+            - ACAPY_LOG_LEVEL=${AGENT_LOG_LEVEL}
+            - ACAPY_AUTO_PROVISION=true
+            - ACAPY_AUTO_ACCEPT_INVITES=true
+            - ACAPY_AUTO_ACCEPT_REQUESTS=true
+            - ACAPY_AUTO_PING_CONNECTION=true
+            - ACAPY_AUTO_RESPOND_MESSAGES=true
+            - ACAPY_AUTO_RESPOND_CREDENTIAL_OFFER=true
+            - ACAPY_AUTO_RESPOND_PRESENTATION_REQUEST=true
+            - ACAPY_AUTO_RESPOND_CREDENTIAL_REQUEST=true
+            - ACAPY_AUTO_VERIFY_PRESENTATION=true
+            - ACAPY_MULTITENANT=true
+            - ACAPY_MULTITENANT_ADMIN=true
+            - ACAPY_MULTITENANT_JWT_SECRET=${AGENT_JWT_SECRET}
+        entrypoint: /bin/bash
+        command: [
+            "-c",
+            "sleep 5; \
+            aca-py start \
+            --inbound-transport http '0.0.0.0' ${AGENT_HTTP_PORT} \
+            --inbound-transport ws '0.0.0.0' ${AGENT_WS_PORT} \
+            --outbound-transport ws \
+            --outbound-transport http \
+            --wallet-type 'indy' \
+            --wallet-storage-type 'default' \
+            --admin '0.0.0.0' ${AGENT_ADMIN_PORT} \
+            --admin-insecure-mode"
+        ]
+        extra_hosts:
+            - host.docker.internal:host-gateway
         tty: true
 
     # Controllers
@@ -55,36 +65,39 @@ services:
         ports:
             - 9021:80
         networks:
-            - aca
+            - aries-cloud-agent
         depends_on:
-            - faber-agent
+            - controllers-agent
         environment:
             - RUNMODE=${RUNMODE}
             - FABER_AGENT_HOST=${FABER_AGENT_HOST}
+            - FABER_AGENT_PORT=${FABER_AGENT_PORT}
     alice-controller:
         build:
             context: ../../controllers/angular/
             args:
                 - RUNMODE=${RUNMODE}
                 - ALICE_AGENT_HOST=${ALICE_AGENT_HOST}
+                - ALICE_AGENT_PORT=${ALICE_AGENT_PORT}
         ports:
             - 9031:80
         networks:
-            - aca
+            - aries-cloud-agent
         depends_on:
-            - alice-agent
+            - controllers-agent
     acme-controller:
         build:
             context: ../../controllers/node/
         ports:
             - 9041:3000
         networks:
-            - aca
+            - aries-cloud-agent
         depends_on:
-            - acme-agent
+            - controllers-agent
         environment:
             - RUNMODE=${RUNMODE}
             - ACME_AGENT_HOST=${ACME_AGENT_HOST}
+            - ACME_AGENT_PORT=${ACME_AGENT_PORT}
 
 networks:
-    aca:
+    aries-cloud-agent:

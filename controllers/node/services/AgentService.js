@@ -1,7 +1,7 @@
 const http = require('http');
 
 const hostname = process.env.ACME_AGENT_HOST || 'localhost';
-const port = 8041;
+const port = process.env.ACME_AGENT_PORT;
 
 console.log('Agent is running on: ' + `http://${hostname}:${port}`);
 

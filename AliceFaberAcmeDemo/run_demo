@@ -2,20 +2,41 @@
 
 # getDockerHost; for details refer to https://github.com/bcgov/DITP-DevOps/tree/main/code/snippets#getdockerhost
 . /dev/stdin <<<"$(cat <(curl -s --raw https://raw.githubusercontent.com/bcgov/DITP-DevOps/main/code/snippets/getDockerHost))"
+export DOCKERHOST=$(getDockerHost)
+export MSYS_NO_PATHCONV=1
+set -e
+
+configureEnvironment () {
+	export AGENT_NAME="ACA-Py Controllers Agent"
+	export AGENT_HTTP_PORT="8010"
+	export AGENT_WS_PORT="8012"
+	export AGENT_ADMIN_PORT="8014"
+	export LEDGER_URL=${LEDGER_URL-http://$DOCKERHOST:9000}
+	export AGENT_WALLET_NAME="agent_wallet"
+	export AGENT_WALLET_ENCRYPTION_KEY="agent_wallet_key"
+	export AGENT_JWT_SECRET=${AGENT_JWT_SECRET:-"supersecret"}
+	export AGENT_LOG_LEVEL="ERROR"
+}
 
 function start_logs() {
 	cd ./docker
 	docker-compose logs -f --tail ${TAIL:-10}
 }
 
-function web_start() {
+function demo_up() {
 	echo "Starting all agents and controllers, this may take a moment."
 
-	FABER_AGENT_HOST="faber-agent"
-	ALICE_AGENT_HOST=${ALICE_AGENT_HOST:-"localhost"}
-	ACME_AGENT_HOST="acme-agent"
+	CONTROLLERS_AGENT_HOST="controllers-agent"
+	CONTROLLERS_AGENT_PORT=${AGENT_ADMIN_PORT}
+	FABER_AGENT_HOST=${CONTROLLERS_AGENT_HOST:-"localhost"}
+	FABER_AGENT_PORT=${CONTROLLERS_AGENT_PORT}
+	ALICE_AGENT_HOST=${CONTROLLERS_AGENT_HOST:-"localhost"}
+	ALICE_AGENT_PORT=${CONTROLLERS_AGENT_PORT}
+	ACME_AGENT_HOST=${CONTROLLERS_AGENT_HOST:-"localhost"}
+	ACME_AGENT_PORT=${CONTROLLERS_AGENT_PORT}
 
 	if [ -z "${PWD_HOST_FQDN}" ]; then
+		ALICE_AGENT_HOST="localhost"
 		DOCKERHOST=$(getDockerHost)
 		RUNMODE="docker"
 	else
@@ -28,15 +49,18 @@ function web_start() {
 			export ETH_CONFIG="eth0"
 		fi
 		MY_HOST=$(ifconfig ${ETH_CONFIG} | grep inet | cut -d':' -f2 | cut -d' ' -f1 | sed 's/\./\-/g')
-		ALICE_AGENT_HOST="ip${MY_HOST}-${SESSION_ID}-8031.direct.${PWD_HOST_FQDN}"
+		ALICE_AGENT_HOST="ip${MY_HOST}-${SESSION_ID}-${ALICE_AGENT_PORT}.direct.${PWD_HOST_FQDN}"
 		DOCKERHOST="ip${MY_HOST}-${SESSION_ID}-{PORT}.direct.${PWD_HOST_FQDN}"
 		RUNMODE="pwd"
 	fi
 
-	AGENT_URLS="FABER_AGENT_HOST=${FABER_AGENT_HOST} ALICE_AGENT_HOST=${ALICE_AGENT_HOST} ACME_AGENT_HOST=${ACME_AGENT_HOST}"
+	AGENT_URLS="FABER_AGENT_HOST=${FABER_AGENT_HOST} \
+		FABER_AGENT_PORT=${FABER_AGENT_PORT} \
+		ALICE_AGENT_HOST=${ALICE_AGENT_HOST} \
+		ALICE_AGENT_PORT=${ALICE_AGENT_PORT} \
+		ACME_AGENT_HOST=${ACME_AGENT_HOST} \
+		ACME_AGENT_PORT=${ACME_AGENT_PORT}"
 	DOCKER_ENV="$AGENT_URLS RUNMODE=${RUNMODE} DOCKERHOST=${DOCKERHOST}"
-
-	echo "Agent Hosts: ${AGENT_URLS}"
 
 	if ! [ -z "$LEDGER_URL" ]; then
 		GENESIS_URL="${LEDGER_URL}/genesis"
@@ -44,6 +68,7 @@ function web_start() {
 	fi
 
 	export $DOCKER_ENV
+	echo "Docker Environment: ${DOCKER_ENV}"
 
 	docker-compose -f ./docker/docker-compose.yml up -d
 	if [ "$LOGS" ]; then
@@ -52,7 +77,7 @@ function web_start() {
 	exit 0
 }
 
-function web_down() {
+function demo_down() {
 	docker-compose -f ./docker/docker-compose.yml down
 	exit 0
 }
@@ -60,14 +85,14 @@ function web_down() {
 function display_help() {
 	help="$(basename "$0") [webstart|webdown|logs] [-h|--help] [-l|--logs]
 
-1) webstart will start all agents and controllers in detached mode.
+1) up will start all agents and controllers in detached mode.
 	Passing the additional logging option (-l|--logs) will follow and output logs to the terminal.
 
-	Example usage: ./run_demo webstart [-l|logs]
+	Example usage: ./run_demo up [-l|logs]
 
-2) webdown will stop all agents and controllers
+2) down will stop all agents and controllers
 	
-	Example usage: ./run_demo webdown
+	Example usage: ./run_demo down
 
 3) logs will will attach to a currently running demo and output logs to the terminal
 	Note: this will only work for an already running demo.
@@ -94,20 +119,23 @@ do
 	-l|--logs)
 		LOGS=1
 	;;
-	webstart|webdown)
+	up|down)
 		DEMO=$i
 	;;
 	logs)
+	    configureEnvironment $@
 		start_logs
 		exit 0
 	;;
 	esac
 done
 
-if [ "$DEMO" = "webstart" ]; then
-	web_start
-elif [ "$DEMO" = "webdown" ]; then
-	web_down
+if [ "$DEMO" = "up" ]; then
+    configureEnvironment $@
+	demo_up
+elif [ "$DEMO" = "down" ]; then
+    configureEnvironment $@
+	demo_down
 else
 	display_help
 	exit 1

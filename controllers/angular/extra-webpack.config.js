@@ -5,7 +5,8 @@ module.exports = {
         new webpack.DefinePlugin({
             $ENV: {
                 RUNMODE: JSON.stringify(process.env.RUNMODE),
-                ALICE_AGENT_HOST: JSON.stringify(process.env.ALICE_AGENT_HOST)
+                ALICE_AGENT_HOST: JSON.stringify(process.env.ALICE_AGENT_HOST),
+                ALICE_AGENT_PORT: JSON.stringify(process.env.ALICE_AGENT_PORT)
             }
         })
     ]

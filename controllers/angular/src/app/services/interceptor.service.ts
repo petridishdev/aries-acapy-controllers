@@ -13,7 +13,7 @@ export class InterceptorService implements HttpInterceptor {
 
   constructor() {
     this.hostname = $ENV.ALICE_AGENT_HOST || 'localhost';
-    this.port = $ENV.RUNMODE === 'pwd' ? '' : ':8031';
+    this.port = $ENV.RUNMODE === 'pwd' ? '' : `:${$ENV.ALICE_AGENT_PORT}`;
     this.formattedAgentUrl = `http://${this.hostname}` + this.port;
     console.log('Agent is running on: ' + this.formattedAgentUrl);
   }
