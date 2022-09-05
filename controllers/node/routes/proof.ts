@@ -64,7 +64,7 @@ router.use(function (req, res, next) {
 });
 
 router.get('/', async function(req, res, next) {
-    const agentService = require('../services/AgentService');
+    const { agentService } = require('../services/AgentService');
 
     const proofs = await agentService.getProofRequests();
 
@@ -88,7 +88,7 @@ router.post('/request', [
 ], handleRequestProofPost, handleRequestProofGet);
 
 async function handleRequestProofGet(req: Request & { errors?: any; proof?: any } , res: Response, next: NextFunction) {
-    const agentService = require('../services/AgentService');
+    const { agentService } = require('../services/AgentService');
     const allConnections = await agentService.getConnections();
     const connections = allConnections.filter((connection: any) => connection.state === 'active' || connection.state === 'request');
     
@@ -113,7 +113,7 @@ async function handleRequestProofGet(req: Request & { errors?: any; proof?: any 
 }
 
 async function handleRequestProofPost(req: Request & {errors?: any; proof?: any} , res: Response, next: NextFunction) {
-    const agentService = require('../services/AgentService');
+    const { agentService } = require('../services/AgentService');
 
     const errors = validationResult(req);
 

@@ -23,7 +23,7 @@ router.get('/', async function (req: Request, res: Response, next: NextFunction)
 });
 
 router.get('/active', async function (req: Request, res: Response, next: NextFunction) {
-    const agentService = require('../services/AgentService');
+    const { agentService } = require('../services/AgentService');
     const allConnections = await agentService.getConnections();
     const connections = allConnections.filter((connection: any) => connection.state === 'active' || connection.state === 'request');
 
@@ -36,7 +36,7 @@ router.get('/active', async function (req: Request, res: Response, next: NextFun
 });
 
 router.get('/pending', async function (req: Request, res: Response, next: NextFunction) {
-    const agentService = require('../services/AgentService');
+    const { agentService } = require('../services/AgentService');
     const allConnections = await agentService.getConnections();
     const connections = allConnections.filter((connection: any) => connection.state === 'invitation');
 
@@ -62,7 +62,7 @@ async function handleNewConnectionGet(req: Request & { invitation: any }, res: R
 }
 
 async function handleNewConnectionPost(req: Request & { invitation: any }, res: Response, next: NextFunction) {
-    const agentService = require('../services/AgentService');
+    const { agentService } = require('../services/AgentService');
 
     const invitation = await agentService.createInvitation();
     if (invitation) {
@@ -105,7 +105,7 @@ async function handleAcceptConnectionGet(req: Request & { invitation: any; error
 }
 
 async function handleAcceptConnectionPost(req: Request & { invitation: any; errors: any }, res: Response, next: NextFunction) {
-    const agentService = require('../services/AgentService');
+    const { agentService } = require('../services/AgentService');
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -123,7 +123,7 @@ router.get('/:id/remove', async function (req: Request, res: Response, next: Nex
     const state = req.query.state || '';
 
     if (connectionId) {
-        const agentService = require('../services/AgentService');
+        const { agentService } = require('../services/AgentService');
         await agentService.removeConnection(connectionId);
     }
 
