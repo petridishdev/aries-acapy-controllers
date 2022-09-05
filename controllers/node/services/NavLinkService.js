@@ -37,4 +37,4 @@ class NavLinkService {
     }
 }
 
-module.exports = NavLinkService
+module.exports = new NavLinkService()

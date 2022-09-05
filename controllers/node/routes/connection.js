@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
 
-const NavLinkService = require('../services/NavLinkService');
-const navLinkService = new NavLinkService();
+const navLinkService = require('../services/NavLinkService');
 navLinkService.registerCustomLinks([
     { "label": "Active", "url": "/connections/active" },
     { "label": "Pending", "url": "/connections/pending" },

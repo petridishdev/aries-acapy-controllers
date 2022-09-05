@@ -3,8 +3,7 @@ const router = express.Router();
 
 /* GET home page. */
 router.get('/', async function(req, res, next) {
-  const NavLinkService = require('../services/NavLinkService');
-  const navLinkService = new NavLinkService();
+  const navLinkService = require('../services/NavLinkService');
 
   res.render('index', { navLinks: navLinkService.getNavLinks() });
 });
