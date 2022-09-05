@@ -1,8 +1,8 @@
-const express = require('express');
+import express, { NextFunction, Request, Response } from 'express';
 const router = express.Router();
-const { check, validationResult } = require('express-validator');
+import { check, validationResult } from 'express-validator';
 
-const navLinkService = require('../services/NavLinkService');
+import { navLinkService } from '../services/NavLinkService';
 navLinkService.registerCustomLinks([
     { "label": "Proofs", "url": "/proofs" },
     { "label": "Request Proof", "url": "/proofs/request" }
@@ -87,10 +87,10 @@ router.post('/request', [
         .withMessage('Credential Definition ID is required'),
 ], handleRequestProofPost, handleRequestProofGet);
 
-async function handleRequestProofGet(req, res, next) {
+async function handleRequestProofGet(req: Request & { errors?: any; proof?: any } , res: Response, next: NextFunction) {
     const agentService = require('../services/AgentService');
     const allConnections = await agentService.getConnections();
-    const connections = allConnections.filter(connection => connection.state === 'active' || connection.state === 'request');
+    const connections = allConnections.filter((connection: any) => connection.state === 'active' || connection.state === 'request');
     
     if (req.errors) {
         res.status(422);
@@ -103,7 +103,7 @@ async function handleRequestProofGet(req, res, next) {
         customNavLinks: navLinkService.getCustomNavLinks(),
         connections,
         errors: req.errors || null,
-        error_keys: (req.errors || []).map(error => error.param),
+        error_keys: (req.errors || []).map((error: any) => error.param),
         proof: {
             proof: (req.errors && req.proof.proof_object) || JSON.stringify(proofJSON, null, 4),
             connectionId: req.errors && req.proof.connection_id,
@@ -112,7 +112,7 @@ async function handleRequestProofGet(req, res, next) {
     });
 }
 
-async function handleRequestProofPost(req, res, next) {
+async function handleRequestProofPost(req: Request & {errors?: any; proof?: any} , res: Response, next: NextFunction) {
     const agentService = require('../services/AgentService');
 
     const errors = validationResult(req);
@@ -127,4 +127,4 @@ async function handleRequestProofPost(req, res, next) {
     res.status(201).redirect('/proofs');
 }
 
-module.exports = router;
+export default router;

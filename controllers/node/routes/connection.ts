@@ -1,8 +1,10 @@
+import { NextFunction, Request, Response } from "express";
+
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
 
-const navLinkService = require('../services/NavLinkService');
+const { navLinkService } = require('../services/NavLinkService');
 navLinkService.registerCustomLinks([
     { "label": "Active", "url": "/connections/active" },
     { "label": "Pending", "url": "/connections/pending" },
@@ -10,20 +12,20 @@ navLinkService.registerCustomLinks([
     { "label": "Accept", "url": "/connections/accept" }
 ]);
 
-router.use(function (req, res, next) {
+router.use(function (req: Request, res: Response, next: NextFunction) {
     navLinkService.clearLinkClasses();
     navLinkService.setNavLinkActive('/connections');
     next();
 });
 
-router.get('/', async function (req, res, next) {
+router.get('/', async function (req: Request, res: Response, next: NextFunction) {
     res.redirect('/connections/active');
 });
 
-router.get('/active', async function (req, res, next) {
+router.get('/active', async function (req: Request, res: Response, next: NextFunction) {
     const agentService = require('../services/AgentService');
     const allConnections = await agentService.getConnections();
-    const connections = allConnections.filter(connection => connection.state === 'active' || connection.state === 'request');
+    const connections = allConnections.filter((connection: any) => connection.state === 'active' || connection.state === 'request');
 
     navLinkService.setCustomNavLinkActive('/connections/active');
     res.render('connection', {
@@ -33,10 +35,10 @@ router.get('/active', async function (req, res, next) {
     });
 });
 
-router.get('/pending', async function (req, res, next) {
+router.get('/pending', async function (req: Request, res: Response, next: NextFunction) {
     const agentService = require('../services/AgentService');
     const allConnections = await agentService.getConnections();
-    const connections = allConnections.filter(connection => connection.state === 'invitation');
+    const connections = allConnections.filter((connection: any) => connection.state === 'invitation');
 
     navLinkService.setCustomNavLinkActive('/connections/pending');
     res.render('connection', {
@@ -50,7 +52,7 @@ router.get('/new', handleNewConnectionGet);
 
 router.post('/new', handleNewConnectionPost, handleNewConnectionGet);
 
-async function handleNewConnectionGet(req, res, next) {
+async function handleNewConnectionGet(req: Request & { invitation: any }, res: Response, next: NextFunction) {
     navLinkService.setCustomNavLinkActive('/connections/new');
     res.render('new_connection', {
         navLinks: navLinkService.getNavLinks(),
@@ -59,7 +61,7 @@ async function handleNewConnectionGet(req, res, next) {
     });
 }
 
-async function handleNewConnectionPost(req, res, next) {
+async function handleNewConnectionPost(req: Request & { invitation: any }, res: Response, next: NextFunction) {
     const agentService = require('../services/AgentService');
 
     const invitation = await agentService.createInvitation();
@@ -77,17 +79,17 @@ router.post('/accept', [
         .notEmpty()
         .withMessage('Invitation object is required'),
     check('invitation_object')
-        .custom((value) => {
+        .custom((value: string) => {
             try {
                 JSON.parse(value);
                 return true;
-              } catch (error) {
-                  throw new Error(`Invalid object: ${error.message}`);
-              }
+            } catch (error: any) {
+                throw new Error(`Invalid object: ${error.message}`);
+            }
         })
 ], handleAcceptConnectionPost, handleAcceptConnectionGet);
 
-async function handleAcceptConnectionGet(req, res, next) {
+async function handleAcceptConnectionGet(req: Request & { invitation: any; errors: any }, res: Response, next: NextFunction) {
     navLinkService.setCustomNavLinkActive('/connections/accept');
 
     if (req.errors) {
@@ -98,17 +100,17 @@ async function handleAcceptConnectionGet(req, res, next) {
         navLinks: navLinkService.getNavLinks(),
         customNavLinks: navLinkService.getCustomNavLinks(),
         errors: req.errors || null,
-        invitation: req.errors && req.invitaion || null
+        invitation: req.errors && req.invitation || null
     });
 }
 
-async function handleAcceptConnectionPost(req, res, next) {
+async function handleAcceptConnectionPost(req: Request & { invitation: any; errors: any }, res: Response, next: NextFunction) {
     const agentService = require('../services/AgentService');
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         req.errors = errors.array({ onlyFirstError: true });
-        req.invitaion = req.body;
+        req.invitation = req.body;
         return next();
     }
 
@@ -116,7 +118,7 @@ async function handleAcceptConnectionPost(req, res, next) {
     res.status(201).redirect('/connections/active');
 }
 
-router.get('/:id/remove', async function (req, res, next) {
+router.get('/:id/remove', async function (req: Request, res: Response, next: NextFunction) {
     const connectionId = req.params.id;
     const state = req.query.state || '';
 
@@ -129,4 +131,4 @@ router.get('/:id/remove', async function (req, res, next) {
     res.redirect(redirectUrl);
 });
 
-module.exports = router;
+export default router;

@@ -1,14 +1,14 @@
 var createError = require('http-errors');
-const express = require('express');
-const path = require('path');
-const cookieParser = require('cookie-parser');
-const logger = require('morgan');
-const { engine } = require('express-handlebars');
-const helpers = require('handlebars-helpers');
+import express, { NextFunction, Request, Response } from 'express';
+import path from 'path';
+import cookieParser from 'cookie-parser';
+import logger from 'morgan';
+import { engine } from 'express-handlebars';
+import helpers from 'handlebars-helpers';
 
-const indexRouter = require('./routes/index');
-const connectionRouter = require('./routes/connection');
-const proofRouter = require('./routes/proof');
+import indexRouter from './routes/index';
+import connectionRouter from './routes/connection';
+import proofRouter from './routes/proof';
 
 const app = express();
 
@@ -17,7 +17,6 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 app.engine('hbs', engine({
   extname: 'hbs',
-  defaultView: 'default',
   layoutsDir: path.join(__dirname, '/views/layouts/'),
   partialsDir: [
     path.join(__dirname, '/views/partials'),
@@ -44,7 +43,7 @@ app.use(function(req, res, next) {
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function(err: any, req: Request, res: Response, next: NextFunction) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

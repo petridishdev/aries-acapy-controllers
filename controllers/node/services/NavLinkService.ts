@@ -1,6 +1,9 @@
 const navLinksJson = require('../data/nav_links.json');
 
 class NavLinkService {
+    navLinks: any[] = [];
+    customNavLinks: any[] = [];
+
     constructor() {
         this.navLinks = navLinksJson;
     }
@@ -13,23 +16,23 @@ class NavLinkService {
         return this.customNavLinks || [];
     }
 
-    registerCustomLinks(links) {
+    registerCustomLinks(links: any[]) {
         this.customNavLinks = links;
     }
 
     clearLinkClasses() {
-        this.navLinks.forEach(navLink => delete navLink.class);
-        this.customNavLinks.forEach(navLink => delete navLink.class);
+        this.navLinks.forEach((navLink: any) => delete navLink.class);
+        this.customNavLinks.forEach((navLink: any) => delete navLink.class);
     }
 
-    setNavLinkActive(url) {
+    setNavLinkActive(url: string) {
         const navLink = this.navLinks.find(navLink => navLink.url === url);
         if (navLink) {
             navLink.class = 'active';
         }
     }
 
-    setCustomNavLinkActive(url) {
+    setCustomNavLinkActive(url: string) {
         const customNavLink = this.customNavLinks.find(navLink => navLink.url === url);
         if (customNavLink) {
             customNavLink.class = 'active';
@@ -37,4 +40,5 @@ class NavLinkService {
     }
 }
 
-module.exports = new NavLinkService()
+const navLinkService = new NavLinkService()
+export { navLinkService }
