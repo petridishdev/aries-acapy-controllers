@@ -4,15 +4,16 @@
  * Module dependencies.
  */
 
-const app = require('./app')
+import app from './app'
+import http from 'http'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const debug = require('debug')('acme-controller:server')
-const http = require('http')
 
 /**
  * Get port from environment and store in Express.
  */
 
-const port = normalizePort(process.env.PORT || '3000')
+const port = normalizePort(process.env.PORT ?? '3000')
 app.set('port', port)
 
 /**
@@ -33,7 +34,7 @@ server.on('listening', onListening)
  * Normalize a port into a number, string, or false.
  */
 
-function normalizePort (val: string) {
+function normalizePort (val: string): string | number | false {
   const port = parseInt(val, 10)
 
   if (isNaN(port)) {
@@ -53,7 +54,7 @@ function normalizePort (val: string) {
  * Event listener for HTTP server "error" event.
  */
 
-function onError (error: any) {
+function onError (error: any): void {
   if (error.syscall !== 'listen') {
     throw error
   }
@@ -81,10 +82,10 @@ function onError (error: any) {
  * Event listener for HTTP server "listening" event.
  */
 
-function onListening () {
+function onListening (): void {
   const addr = server.address()
   const bind = typeof addr === 'string'
     ? 'pipe ' + addr
-    : 'port ' + addr.port
+    : 'port ' + addr?.port
   debug('Listening on ' + bind)
 }

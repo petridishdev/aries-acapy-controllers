@@ -1,17 +1,20 @@
 import axios from 'axios'
 
-const hostname = process.env.ACME_AGENT_HOST || 'localhost'
-const port = process.env.ACME_AGENT_PORT
-
-
-const URLPrefix = `http://${hostname}:${port}`
-
-console.log('Agent is running on: ' + URLPrefix)
-
 class AgentService {
-  async getStatus () {
+  hostname = process.env.ACME_AGENT_HOST ?? 'localhost'
+  port = process.env.ACME_AGENT_PORT ?? ''
+
+  constructor () {
+    console.log('Agent is running on: ' + this.URL)
+  }
+
+  get URL (): string {
+    return `http://${this.hostname}:${this.port}`
+  }
+
+  async getStatus (): Promise<any> {
     try {
-      const response = await axios.get(`${URLPrefix}/status`)
+      const response = await axios.get(`${this.URL}/status`)
       return response
     } catch (error) {
       console.error(error)
@@ -19,46 +22,73 @@ class AgentService {
     }
   }
 
-  async getConnections () {
+  async createWallet (wallet: any): Promise<any> {
     try {
-      const response = await axios.get(`${URLPrefix}/connections`) as any
-      return response.results
+      const response = await axios.post(`${this.URL}/multitenancy/wallet`, wallet)
+      return response.data
+    } catch (error) {
+      console.error(error)
+      return null
+    }
+  }
+
+  async getConnections (token: string): Promise<any[]> {
+    try {
+      const response = await axios.get(`${this.URL}/connections`, {
+        headers: {
+          Authorization: 'Bearer ' + token
+        }
+      }) as any
+      return response.data.results
     } catch (error) {
       console.error(error)
       return []
     }
   }
 
-  async createInvitation () {
+  async removeConnection (connectionId: string, token: string): Promise<void> {
     try {
-      const response = await axios.post(`${URLPrefix}/connections/create-invitation`)
-      return response
+      await axios.delete(`${this.URL}/connections/${connectionId}`, {
+        headers: {
+          Authorization: 'Bearer ' + token
+        }
+      })
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  async createInvitation (token: string): Promise<any> {
+    try {
+      const response = await axios.post(`${this.URL}/connections/create-invitation`, null, {
+        headers: {
+          Authorization: 'Bearer ' + token
+        }
+      })
+      return response.data
     } catch (error) {
       console.error(error)
       return {}
     }
   }
 
-  async receiveInvitation (invitation: any) {
+  async receiveInvitation (invitation: any, token: string): Promise<any> {
     try {
-      const response = await axios.post(`${URLPrefix}/connections/receive-invitation`, invitation)
-      return response
+      invitation.serviceEndpoint = this.URL
+      const response = await axios.post(`${this.URL}/connections/receive-invitation`, invitation, {
+        headers: {
+          Authorization: 'Bearer ' + token
+        }
+      })
+      return response.data
     } catch (error) {
       console.error(error)
     }
   }
 
-  async removeConnection (connectionId: string) {
+  async getProofRequests (): Promise<any> {
     try {
-      await axios.post(`${URLPrefix}/connections/${connectionId}/remove`)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  async getProofRequests () {
-    try {
-      const response = await axios.get(`${URLPrefix}/present-proof/records`) as any
+      const response = await axios.get(`${this.URL}/present-proof/records`) as any
       return response.results
     } catch (error) {
       console.error(error)
@@ -66,9 +96,9 @@ class AgentService {
     }
   }
 
-  async sendProofRequest (proofRequest: any) {
+  async sendProofRequest (proofRequest: any): Promise<void> {
     try {
-      await axios.post(`${URLPrefix}/present-proof/send-request`, proofRequest)
+      await axios.post(`${this.URL}/present-proof/send-request`, proofRequest)
     } catch (error) {
       console.error(error)
     }

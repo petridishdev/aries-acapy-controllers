@@ -1,0 +1,35 @@
+<div class="content">
+    <div class="container">
+        {{#if wallet}}
+        <div>Wallet created</div>
+        {{else}}
+        <form novalidate autocomplete="false" method="POST" action="/wallets">
+            <div class="form-group">
+                <div class="mb-3">
+                    <label for="walletName" class="form-label">Wallet name:</label>
+                    <input type="text" class="form-control" id="walletName" name="name">
+                </div>
+                <div class="mb-3">
+                    <label for="walletKey" class="form-label">Wallet key:</label>
+                    <input type="text" class="form-control" id="walletKey" name="key">
+                </div>
+                <div class="mb-3">
+                    <label for="walletLabel" class="form-label">Wallet label:</label>
+                    <input type="text" class="form-control" id="walletLabel" name="label">
+                </div>
+                {{#if errors}}
+                    <div class="invalid-feedback d-block">
+                        {{#each errors}}
+                        <div>{{ this.msg }}</div>
+                        {{/each}}
+                    </div>
+                {{/if}}
+            </div>
+                <button type="submit" class="btn btn-primary btn-lg btn-block mb-3">
+                    Create New Wallet
+                </button>
+        </form>
+        {{/if}}
+        <div>Go back <a href="/">home</a></div>
+    </div>
+</div>
