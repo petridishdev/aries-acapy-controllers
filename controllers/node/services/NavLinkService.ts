@@ -1,43 +1,43 @@
-const navLinksJson = require('../data/nav_links.json');
+import navLinksJson from '../data/nav_links.json'
 
 class NavLinkService {
-    navLinks: any[] = [];
-    customNavLinks: any[] = [];
+  navLinks: any[] = []
+  customNavLinks: any[] = []
 
-    constructor() {
-        this.navLinks = navLinksJson;
-    }
+  constructor () {
+    this.navLinks = navLinksJson
+  }
 
-    getNavLinks() {
-        return this.navLinks || [];
-    }
+  getNavLinks (): any[] {
+    return this.navLinks || []
+  }
 
-    getCustomNavLinks() {
-        return this.customNavLinks || [];
-    }
+  getCustomNavLinks (): any[] {
+    return this.customNavLinks || []
+  }
 
-    registerCustomLinks(links: any[]) {
-        this.customNavLinks = links;
-    }
+  registerCustomLinks (links: any[]): void {
+    this.customNavLinks = links
+  }
 
-    clearLinkClasses() {
-        this.navLinks.forEach((navLink: any) => delete navLink.class);
-        this.customNavLinks.forEach((navLink: any) => delete navLink.class);
-    }
+  clearLinkClasses (): void {
+    this.navLinks.forEach((navLink: any) => delete navLink.class)
+    this.customNavLinks.forEach((navLink: any) => delete navLink.class)
+  }
 
-    setNavLinkActive(url: string) {
-        const navLink = this.navLinks.find(navLink => navLink.url === url);
-        if (navLink) {
-            navLink.class = 'active';
-        }
+  setNavLinkActive (url: string): void {
+    const navLink = this.navLinks.find(navLink => navLink.url === url)
+    if (navLink) {
+      navLink.class = 'active'
     }
+  }
 
-    setCustomNavLinkActive(url: string) {
-        const customNavLink = this.customNavLinks.find(navLink => navLink.url === url);
-        if (customNavLink) {
-            customNavLink.class = 'active';
-        }
+  setCustomNavLinkActive (url: string): void {
+    const customNavLink = this.customNavLinks.find(navLink => navLink.url === url)
+    if (customNavLink) {
+      customNavLink.class = 'active'
     }
+  }
 }
 
 const navLinkService = new NavLinkService()

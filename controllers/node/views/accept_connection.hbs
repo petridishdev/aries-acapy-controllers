@@ -6,7 +6,7 @@
             <div class="form-group">
                 <label for="invitationObject">Paste invitation object block:</label>
                 <textarea class="form-control {{#if errors}}is-invalid{{/if}}" id="invitationObject"
-                    name="invitation_object" cols="30" rows="10">{{invitation.invitation_object}}</textarea>
+                    name="invitation_obj_str" cols="30" rows="10">{{invitation.invitation_object}}</textarea>
                 {{#if errors}}
                 <div class="invalid-feedback d-block">
                     {{#each errors}}
@@ -91,7 +91,7 @@
                 return;
             }
             const url = new URL(value);
-            const invitationParam = url.searchParams.get('c_i');
+            const invitationParam = url.searchParams.get('oob');
             if (!invitationParam) {
                 throw new Error();
             }

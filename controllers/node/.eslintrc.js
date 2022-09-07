@@ -11,7 +11,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
-    project: ['./controllers/node/tsconfig.json']
+    project: ['./tsconfig.json']
   },
   rules: {
     '@typescript-eslint/no-misused-promises': 'off',

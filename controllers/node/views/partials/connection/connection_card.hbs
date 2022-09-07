@@ -8,15 +8,16 @@
         {{#unlessEq connection.state 'invitation'}}
         <div class="card-title">
             <small>
-                {{#eq connection.initiator "self"}}
+                {{#eq connection.their_role "invitee"}}
                 <span>Sent&nbsp;</span>
                 {{/eq}}
-                {{#eq connection.initiator "external"}}
+                {{#eq connection.their_role "inviter"}}
                 <span>Received&nbsp;</span>
                 {{/eq}}
             </small>
             <small class="text-muted">{{ connection.created_at }}</small>
         </div>
+        {{#if connection.their_label}}
         <div class="card-text">
             <span>
                 {{#eq connection.initiator "self"}}
@@ -28,12 +29,15 @@
             </span>
             <span>{{ connection.their_label }}</span>
         </div>
+        {{/if}}
+        {{#if connection.their_did}}
         <div class="card-text">
             <span>
                 <small class="text-muted">DID:</small>&nbsp;
             </span>
             <span>{{ connection.their_did }}</span>
         </div>
+        {{/if}}
         {{/unlessEq}}
         {{#eq connection.state "invitation"}}
         <div class="card-title">
